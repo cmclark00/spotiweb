@@ -26,26 +26,30 @@
 <!-- Display tracks of the selected playlist -->
 <h2 class="mt-4">Playlist: <%= playlist.name %></h2>
 
-<!-- Display tracks with album art -->
-<% if (playlist && tracks && tracks.length > 0) { %>
+<% if (tracks && tracks.length > 0) { %>
     <div class="row">
         <% tracks.forEach((track) => { %>
             <div class="col-md-4 mb-4">
                 <div class="card">
-                    <!-- Check if track has album images -->
-                    <% if (track.album && track.album.images && track.album.images.length > 0) { %>
-                        <img src="<%= track.album.images[0].url %>" class="card-img-top" alt="Track Art">
+                    <% if (track.album) { %>
+                        <!-- Debugging: Print track.album for debugging -->
+                        <pre><%= JSON.stringify(track.album, null, 2) %></pre>
+                        <% if (track.album.images) { %>
+                            <!-- Debugging: Print track.album.images for debugging -->
+                            <pre><%= JSON.stringify(track.album.images, null, 2) %></pre>
+                            <img src="<%= track.album.images[0].url %>" class="card-img-top" alt="Track Art">
+                        <% } else { %>
+                            <!-- Debugging: Print a message if track.album.images is not defined -->
+                            <p>No images for this track</p>
+                        <% } %>
                     <% } else { %>
-                        <p>No album art available</p>
+                        <!-- Debugging: Print a message if track.album is not defined -->
+                        <p>No album information for this track</p>
                     <% } %>
                     <div class="card-body">
                         <h5 class="card-title"><%= track.name %></h5>
-                        <!-- Check if track has artists -->
-                        <% if (track.artists && track.artists.length > 0) { %>
-                            <p class="card-text">Artist: <%= track.artists.map(artist => artist.name).join(', ') %></p>
-                        <% } else { %>
-                            <p class="card-text">No artist information available</p>
-                        <% } %>
+                        <!-- Check if track.artists is defined before using map -->
+                        <p class="card-text">Artist: <%= (track.artists && track.artists.length > 0) ? track.artists.map(artist => artist.name).join(', ') : 'Unknown Artist' %></p>
                         <!-- Add delete button with form -->
                         <form action="/playlist/<%= playlist.id %>/remove-song/<%= track.id %>" method="post">
                             <button type="submit" class="btn btn-danger">Remove from Playlist</button>
@@ -58,6 +62,12 @@
 <% } else { %>
     <p>No tracks available for this playlist.</p>
 <% } %>
+
+
+
+
+
+    </div>
 
 
 
