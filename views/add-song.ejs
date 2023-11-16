@@ -1,0 +1,19 @@
+<h2>Search Results</h2>
+
+<form action="/playlist/<%= playlistId %>/add-song" method="post">
+    <input type="text" name="searchQuery" placeholder="Search for songs" required>
+    <button type="submit">Search</button>
+</form>
+
+<ul>
+    <% tracks.forEach((track) => { %>
+        <li>
+            <span><%= track.name %></span>
+            <span><%= track.artists.map(artist => artist.name).join(', ') %></span>
+            <form action="/playlist/<%= playlistId %>/add-song/<%= track.id %>" method="post">
+                <button type="submit">Add to Playlist</button>
+            </form>
+        </li>
+    <% }); %>
+</ul>
+

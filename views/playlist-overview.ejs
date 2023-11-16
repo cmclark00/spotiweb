@@ -1,0 +1,31 @@
+<!-- Display user playlists with artwork -->
+<% if (playlists && playlists.length > 0) { %>
+    <h2 class="mt-4">Your Playlists</h2>
+    <div class="row">
+      <% playlists.forEach((playlist) => { %>
+        <div class="col-md-4 mb-4">
+          <div class="card">
+            <% if (playlist.images && playlist.images.length > 0) { %>
+              <img src="<%= playlist.images[0].url %>" class="card-img-top" alt="Playlist Art">
+            <% } else { %>
+              <!-- Provide a default image or handle the case where there is no image -->
+              <img src="default-image.jpg" class="card-img-top" alt="Default Image">
+            <% } %>
+            <div class="card-body">
+              <h5 class="card-title">
+                <a href="/playlist/<%= playlist.id %>">
+                  <%= playlist.name %>
+                </a>
+              </h5>
+              <p class="card-text">
+                <%= playlist.description %>
+              </p>
+            </div>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+  <% } else { %>
+    <p>No playlists available</p>
+  <% } %>
+  

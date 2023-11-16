@@ -1,0 +1,233 @@
+const express = require('express');
+const session = require('express-session');
+const passport = require('./auth');
+const SpotifyWebApi = require('spotify-web-api-node');
+const app = express();
+
+// Set EJS as the view engine
+app.set('view engine', 'ejs');
+
+// Specify the views directory
+app.set('views', __dirname + '/views');
+
+// Middleware to parse the request body
+app.use(express.urlencoded({ extended: true }));
+
+app.use(
+  session({ secret: 'your-secret-key', resave: true, saveUninitialized: true })
+);
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Import the Spotify API module
+const spotifyApi = new SpotifyWebApi();
+
+// Middleware to check if the user is authenticated
+const isAuthenticated = (req, res, next) => {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect('/login');
+};
+
+const playlists = [];
+
+// Additional route for the root path
+app.get('/', (req, res) => {
+    res.render('home', { user: req.user }); // Pass the user object
+  });
+  
+// Route to initiate Spotify authentication
+app.get('/login', passport.authenticate('spotify', { scope: ['user-read-private', 'playlist-modify-public', 'playlist-modify-private'] }));
+
+// Route to handle the Spotify callback
+// Route to handle the Spotify callback
+app.get('/callback', passport.authenticate('spotify', { failureRedirect: '/' }), (req, res) => {
+    res.redirect('/profile');
+  });
+  
+  
+  
+
+// Route to get user profile and playlists
+app.get('/profile', isAuthenticated, async (req, res) => {
+    if (!req.user.accessToken) {
+        return res.status(401).send('No access token available');
+    }
+
+    spotifyApi.setAccessToken(req.user.accessToken);
+
+    try {
+        // Fetch user's playlists
+        const data = await spotifyApi.getUserPlaylists(req.user.id);
+        const userPlaylists = data.body.items;
+
+        // Save the playlists to the object
+        playlists[req.user.id] = userPlaylists.map(playlist => ({
+            ...playlist,
+            tracks: [] // Initialize tracks as an empty array
+        }));
+
+        res.render('profile', { user: req.user, playlists: userPlaylists });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Error fetching playlists');
+    }
+});
+
+
+
+
+  
+// index.js
+
+// index.js
+
+app.get('/playlist/:playlistId', isAuthenticated, (req, res) => {
+    const playlistId = req.params.playlistId;
+
+    // Fetch playlist details
+    spotifyApi.getPlaylist(playlistId)
+        .then((playlistData) => {
+            const playlist = playlistData.body;
+
+            // Fetch playlist tracks
+            spotifyApi.getPlaylistTracks(playlistId)
+                .then((tracksData) => {
+                    const tracks = tracksData.body.items; // Use items directly
+
+                    // Pass user, playlist, and tracks to the template
+                    res.render('playlist', { user: req.user, playlist, tracks });
+                })
+                .catch((err) => {
+                    console.error(err);
+                    res.status(500).send('Error fetching playlist tracks');
+                });
+        })
+        .catch((err) => {
+            console.error(err);
+            res.status(500).send('Error fetching playlist details');
+        });
+});
+
+
+// Route to create a new playlist
+app.post('/create-playlist', isAuthenticated, async (req, res) => {
+    const playlistName = req.body.playlistName;
+
+    if (!playlistName) {
+        return res.status(400).send('Playlist name is required.');
+    }
+
+    try {
+        const data = await spotifyApi.createPlaylist(playlistName, { public: true });
+        const newPlaylistId = data.body.id;
+        res.redirect(`/playlist/${newPlaylistId}`);
+    } catch (err) {
+        console.error(err);
+
+        // Check if the error is from Spotify API and has a response
+        if (err.response && err.response.body && err.response.body.error) {
+            return res.status(err.response.body.error.status || 500).send(err.response.body.error.message || 'Error creating playlist');
+        }
+
+        // Log the complete error details
+        console.error('Error details:', err);
+
+        res.status(500).send('Error creating playlist');
+    }
+});
+
+// Route to search for songs and add them to a playlist
+app.post('/playlist/:playlistId/add-song', isAuthenticated, async (req, res) => {
+    const playlistId = req.params.playlistId;
+    const searchQuery = req.body.searchQuery;
+
+    try {
+        // Search for tracks using the Spotify API
+        const searchResults = await spotifyApi.searchTracks(searchQuery, { limit: 5 });
+        const tracks = searchResults.body.tracks.items;
+
+        res.render('add-song', { tracks, playlistId });
+    } catch (err) {
+        console.error('Error searching for tracks:', err);
+        res.status(500).send('Error searching for tracks');
+    }
+});
+
+// Route to handle adding a selected song to the playlist
+app.post('/playlist/:playlistId/add-song/:trackId', (req, res) => {
+    const playlistId = req.params.playlistId;
+    const trackId = req.params.trackId;
+
+    try {
+        // Add the selected track to the playlist using the Spotify API
+        spotifyApi.addTracksToPlaylist(playlistId, [`spotify:track:${trackId}`]);
+        res.redirect(`/playlist/${playlistId}`);
+    } catch (err) {
+        console.error('Error adding track to playlist:', err);
+        res.status(500).send('Error adding track to playlist');
+    }
+});
+
+
+// Route to handle the removal of a track from a playlist
+// Route to handle the removal of a track from a playlist
+// Route to handle the removal of a track from a playlist
+app.post('/playlist/:playlistId/remove-song/:trackId', (req, res) => {
+    const userId = req.user.id;
+    const playlistId = req.params.playlistId;
+    const trackId = req.params.trackId;
+  
+    // Find the playlist in your data structure
+    const playlist = playlists[userId].find((pl) => pl.id === playlistId);
+  
+    // Debugging: Print out playlistId and trackId
+    console.log('Playlist ID:', playlistId);
+    console.log('Track ID:', trackId);
+  
+    // Check if the playlist and track exist
+    if (playlist && playlist.tracks) {
+      // Debugging: Print out the current tracks in the playlist
+      console.log('Playlist Tracks:', playlist.tracks);
+  
+      // Check if the trackId exists in the playlist.tracks array
+      if (playlist.tracks.includes(trackId)) {
+        // Remove the track from the playlist
+        playlist.tracks = playlist.tracks.filter((track) => track !== trackId);
+  
+        // Optionally, you might want to save the updated playlist to your data source (e.g., a database)
+  
+        // Redirect back to the playlist page
+        res.redirect(`/playlist/${playlistId}`);
+      } else {
+        // Debugging: Print out the current tracks in the playlist if trackId is not found
+        console.log('Track not found in the playlist. Current Playlist Tracks:', playlist.tracks);
+  
+        // Handle the case where the track is not found in the playlist
+        res.status(404).send('Track not found in the playlist');
+      }
+    } else {
+      // Debugging: Print out playlist if the playlist or track is not found
+      console.log('Playlist or track not found:', playlist);
+  
+      // Handle the case where the playlist is not found
+      res.status(404).send('Playlist not found');
+    }
+  });
+  
+  
+  
+  
+
+
+
+
+
+// Start the server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
+
