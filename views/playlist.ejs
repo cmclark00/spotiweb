@@ -24,7 +24,9 @@
     </div>
 
 <!-- Display tracks of the selected playlist -->
+<!-- Display tracks of the selected playlist -->
 <h2 class="mt-4">Playlist: <%= playlist.name %></h2>
+
 
 <% if (tracks && tracks.length > 0) { %>
     <div class="row">
@@ -37,7 +39,8 @@
                         <% if (track.album.images) { %>
                             <!-- Debugging: Print track.album.images for debugging -->
                             <pre><%= JSON.stringify(track.album.images, null, 2) %></pre>
-                            <img src="<%= track.album.images[0].url %>" class="card-img-top" alt="Track Art">
+                            <img src="<%= track.album.images && track.album.images.length > 0 ? track.album.images[0].url : '' %>" class="card-img-top" alt="Track Art">
+
                         <% } else { %>
                             <!-- Debugging: Print a message if track.album.images is not defined -->
                             <p>No images for this track</p>
@@ -64,10 +67,6 @@
 <% } %>
 
 
-
-
-
-    </div>
 
 
 

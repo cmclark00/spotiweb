@@ -63,10 +63,13 @@ app.get('/profile', isAuthenticated, async (req, res) => {
         const userPlaylists = data.body.items;
 
         // Save the playlists to the object
+        // Inside the '/profile' route
         playlists[req.user.id] = userPlaylists.map(playlist => ({
             ...playlist,
             tracks: [] // Initialize tracks as an empty array
         }));
+
+
 
         res.render('profile', { user: req.user, playlists: userPlaylists });
     } catch (err) {
@@ -98,6 +101,10 @@ app.get('/playlist/:playlistId', isAuthenticated, (req, res) => {
 
                     // Pass user, playlist, and tracks to the template
                     res.render('playlist', { user: req.user, playlist, tracks });
+        
+                    console.log('Tracks Data:', tracksData.body);
+
+
                 })
                 .catch((err) => {
                     console.error(err);
@@ -169,59 +176,6 @@ app.post('/playlist/:playlistId/add-song/:trackId', (req, res) => {
         res.status(500).send('Error adding track to playlist');
     }
 });
-
-
-// Route to handle the removal of a track from a playlist
-// Route to handle the removal of a track from a playlist
-// Route to handle the removal of a track from a playlist
-app.post('/playlist/:playlistId/remove-song/:trackId', (req, res) => {
-    const userId = req.user.id;
-    const playlistId = req.params.playlistId;
-    const trackId = req.params.trackId;
-  
-    // Find the playlist in your data structure
-    const playlist = playlists[userId].find((pl) => pl.id === playlistId);
-  
-    // Debugging: Print out playlistId and trackId
-    console.log('Playlist ID:', playlistId);
-    console.log('Track ID:', trackId);
-  
-    // Check if the playlist and track exist
-    if (playlist && playlist.tracks) {
-      // Debugging: Print out the current tracks in the playlist
-      console.log('Playlist Tracks:', playlist.tracks);
-  
-      // Check if the trackId exists in the playlist.tracks array
-      if (playlist.tracks.includes(trackId)) {
-        // Remove the track from the playlist
-        playlist.tracks = playlist.tracks.filter((track) => track !== trackId);
-  
-        // Optionally, you might want to save the updated playlist to your data source (e.g., a database)
-  
-        // Redirect back to the playlist page
-        res.redirect(`/playlist/${playlistId}`);
-      } else {
-        // Debugging: Print out the current tracks in the playlist if trackId is not found
-        console.log('Track not found in the playlist. Current Playlist Tracks:', playlist.tracks);
-  
-        // Handle the case where the track is not found in the playlist
-        res.status(404).send('Track not found in the playlist');
-      }
-    } else {
-      // Debugging: Print out playlist if the playlist or track is not found
-      console.log('Playlist or track not found:', playlist);
-  
-      // Handle the case where the playlist is not found
-      res.status(404).send('Playlist not found');
-    }
-  });
-  
-  
-  
-  
-
-
-
 
 
 // Start the server
