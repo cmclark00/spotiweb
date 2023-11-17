@@ -86,35 +86,26 @@ app.get('/profile', isAuthenticated, async (req, res) => {
 
 // index.js
 
-app.get('/playlist/:playlistId', isAuthenticated, (req, res) => {
+app.get('/playlist/:playlistId', isAuthenticated, async (req, res) => {
     const playlistId = req.params.playlistId;
 
-    // Fetch playlist details
-    spotifyApi.getPlaylist(playlistId)
-        .then((playlistData) => {
-            const playlist = playlistData.body;
+    try {
+        // Fetch playlist details
+        const playlistData = await spotifyApi.getPlaylist(playlistId);
+        const playlist = playlistData.body;
 
-            // Fetch playlist tracks
-            spotifyApi.getPlaylistTracks(playlistId)
-                .then((tracksData) => {
-                    const tracks = tracksData.body.items; // Use items directly
+        // Fetch playlist tracks
+        const tracksData = await spotifyApi.getPlaylistTracks(playlistId);
+        const tracks = tracksData.body.items; // Use items directly
 
-                    // Pass user, playlist, and tracks to the template
-                    res.render('playlist', { user: req.user, playlist, tracks });
-        
-                    console.log('Tracks Data:', tracksData.body);
+        console.log('Tracks Data:', tracksData.body); // Log tracks data to the console
 
-
-                })
-                .catch((err) => {
-                    console.error(err);
-                    res.status(500).send('Error fetching playlist tracks');
-                });
-        })
-        .catch((err) => {
-            console.error(err);
-            res.status(500).send('Error fetching playlist details');
-        });
+        // Pass user, playlist, and tracks to the template
+        res.render('playlist', { user: req.user, playlist, tracks });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Error fetching playlist details or tracks');
+    }
 });
 
 

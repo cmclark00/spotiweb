@@ -1,97 +1,76 @@
-
+<!-- views/playlist.ejs -->
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Playlist</title>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playlist</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 <body>
-
     <div class="container mt-4">
-
-    <div class="text-center mt-4">
-    <div class="justify-content-center">  
-<% if (user && user.photos && user.photos.length > 0) { %>
-    <img src="<%= user.photos[0].value %>" alt="User Photo" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
-<% } %>
-<br />
-      <p class="mt-2">Welcome, <%= user.displayName %>!</p>
-      <br />
-      <a href="/logout" class="btn btn-danger mt-2">Logout</a>
-    </div>
-
-<!-- Display tracks of the selected playlist -->
-<!-- Display tracks of the selected playlist -->
-<h2 class="mt-4">Playlist: <%= playlist.name %></h2>
-
-
-<% if (tracks && tracks.length > 0) { %>
-    <div class="row">
-        <% tracks.forEach((track) => { %>
-            <div class="col-md-4 mb-4">
-                <div class="card">
-                    <% if (track.album) { %>
-                        <!-- Debugging: Print track.album for debugging -->
-                        <pre><%= JSON.stringify(track.album, null, 2) %></pre>
-                        <% if (track.album.images) { %>
-                            <!-- Debugging: Print track.album.images for debugging -->
-                            <pre><%= JSON.stringify(track.album.images, null, 2) %></pre>
-                            <img src="<%= track.album.images && track.album.images.length > 0 ? track.album.images[0].url : '' %>" class="card-img-top" alt="Track Art">
-
-                        <% } else { %>
-                            <!-- Debugging: Print a message if track.album.images is not defined -->
-                            <p>No images for this track</p>
-                        <% } %>
-                    <% } else { %>
-                        <!-- Debugging: Print a message if track.album is not defined -->
-                        <p>No album information for this track</p>
+        <h2 class="text-center mb-4">Playlist: <%= playlist.name %></h2>
+        
+        <div class="row justify-content-center">
+            <div class="col-md-4">
+                <div class="text-center">
+                    <!-- Add the playlist image if available -->
+                    <% if (playlist.images && playlist.images.length > 0) { %>
+                        <img src="<%= playlist.images[0].url %>" alt="Playlist Image" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
                     <% } %>
-                    <div class="card-body">
-                        <h5 class="card-title"><%= track.name %></h5>
-                        <!-- Check if track.artists is defined before using map -->
-                        <p class="card-text">Artist: <%= (track.artists && track.artists.length > 0) ? track.artists.map(artist => artist.name).join(', ') : 'Unknown Artist' %></p>
-                        <!-- Add delete button with form -->
-                        <form action="/playlist/<%= playlist.id %>/remove-song/<%= track.id %>" method="post">
-                            <button type="submit" class="btn btn-danger">Remove from Playlist</button>
-                        </form>
-                    </div>
+                    <p class="mt-2">Playlist by <%= playlist.owner.display_name %></p>
                 </div>
             </div>
-        <% }); %>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-body text-center">
+                <h5 class="card-title">Playlist Tracks</h5>
+                <div class="row justify-content-center">
+                    <% tracks.forEach((track) => { %>
+                        <div class="col-md-4 mb-4">
+                            <div class="card">
+                                <!-- Album Art Card -->
+                                <div class="card-img-top">
+                                    <% if (track.track.album.images && track.track.album.images.length > 0) { %>
+                                        <!-- Add the track album art if available -->
+                                        <img src="<%= track.track.album.images[1].url %>" alt="Album Art" class="img-fluid" style="object-fit: cover;">
+                                    <% } %>
+                                </div>
+
+                                <!-- Track Info Card -->
+                                <div class="card-body">
+                                    <h5 class="card-title"><%= track.track.name %></h5>
+                                    <p class="card-text">by <%= track.track.artists.map(artist => artist.name).join(', ') %></p>
+
+                                    <!-- Audio Preview -->
+                                    <% if (track.track.preview_url) { %>
+                                        <audio controls class="mt-2">
+                                            <source src="<%= track.track.preview_url %>" type="audio/mp3">
+                                            Your browser does not support the audio element.
+                                        </audio>
+                                    <% } else { %>
+                                        <p class="mt-2">No preview available</p>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <a href="/profile" class="btn btn-primary mt-4">Back to Profile</a>
+        </div>
     </div>
-<% } else { %>
-    <p>No tracks available for this playlist.</p>
-<% } %>
 
-
-
-
-
-<form action="/playlist/<%= playlist.id %>/add-song" method="post" class="mt-4">
-    <label for="searchQuery">Search for songs:</label>
-    <input type="text" name="searchQuery" required>
-    <button type="submit" class="btn btn-primary">Search</button>
-</form>
-
-
-
-
-<a href="/profile" class="btn btn-primary">Back to Profile</a>
-
-  
-  
-  
-
-</div>
-</div>
-<!-- Add these lines to your HTML file(s) for Bootstrap JS and Popper.js -->
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-
+    <!-- Add Bootstrap JS and Popper.js CDN links (if needed) -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 </body>
 </html>
+
 

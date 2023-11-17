@@ -7,7 +7,7 @@ passport.use(
       {
         clientID: '02ed3f3586a54f43b8a03143e937636a',
         clientSecret: 'a412c98385474978bbbca92756a63acd',
-        callbackURL: 'http://localhost:5000/callback', // Adjust accordingly
+        callbackURL: 'http://99.140.115.86:5000/callback', // Adjust accordingly
       },
       (accessToken, refreshToken, expires_in, profile, done) => {
         // Save user information to session or database
