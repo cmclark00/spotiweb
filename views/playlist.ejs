@@ -61,15 +61,69 @@
             </div>
         </div>
 
+       <!-- Live Search Section -->
+    <div class="mt-4">
+        <h2>Search for Songs</h2>
+        <input type="text" id="searchInput" class="form-control mb-2" placeholder="Search for songs...">
+        <div id="searchResults" class="list-group"></div>
+    </div>
+
         <div class="text-center">
             <a href="/profile" class="btn btn-primary mt-4">Back to Profile</a>
         </div>
-    </div>
+    
 
     <!-- Add Bootstrap JS and Popper.js CDN links (if needed) -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+    <script>
+        // Function to perform live search
+        const performSearch = async () => {
+            const searchInput = document.getElementById('searchInput');
+            const searchResults = document.getElementById('searchResults');
+    
+            // Clear previous search results
+            searchResults.innerHTML = '';
+    
+            // Fetch search results from your server (adjust the URL accordingly)
+            const response = await fetch(`/search?query=${searchInput.value}`);
+            const data = await response.json();
+    
+            // Display up to 5 search results
+            data.slice(0, 5).forEach((result) => {
+                // Create a container for each result
+                const resultItem = document.createElement('div');
+                resultItem.className = 'list-group-item';
+    
+                // Display the album art if available
+                if (result.album && result.album.images && result.album.images.length > 0) {
+                    const albumArt = document.createElement('img');
+                    albumArt.src = result.album.images[2].url; // Use the first image
+                    albumArt.alt = 'Album Art';
+                    albumArt.className = 'mr-2'; // Add margin for better spacing
+                    resultItem.appendChild(albumArt);
+                }
+    
+                // Display the track information
+                const trackInfo = document.createElement('span');
+                trackInfo.textContent = `${result.name} by ${result.artists.map(artist => artist.name).join(', ')}`;
+                resultItem.appendChild(trackInfo);
+    
+                // Append the result container to the search results container
+                searchResults.appendChild(resultItem);
+            });
+        };
+    
+        // Attach the performSearch function to the input's "input" event
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', performSearch);
+        });
+    </script>
+      
+
 </body>
 </html>
 

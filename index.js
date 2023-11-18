@@ -136,37 +136,19 @@ app.post('/create-playlist', isAuthenticated, async (req, res) => {
     }
 });
 
-// Route to search for songs and add them to a playlist
-app.post('/playlist/:playlistId/add-song', isAuthenticated, async (req, res) => {
-    const playlistId = req.params.playlistId;
-    const searchQuery = req.body.searchQuery;
-
+app.get('/search', isAuthenticated, async (req, res) => {
+    const searchQuery = req.query.query;
+  
     try {
-        // Search for tracks using the Spotify API
-        const searchResults = await spotifyApi.searchTracks(searchQuery, { limit: 5 });
-        const tracks = searchResults.body.tracks.items;
-
-        res.render('add-song', { tracks, playlistId });
+      const response = await spotifyApi.searchTracks(searchQuery, { limit: 5 });
+      const tracks = response.body.tracks.items;
+      res.json(tracks);
     } catch (err) {
-        console.error('Error searching for tracks:', err);
-        res.status(500).send('Error searching for tracks');
+      console.error('Error searching for tracks:', err);
+      res.status(500).send('Error searching for tracks');
     }
-});
-
-// Route to handle adding a selected song to the playlist
-app.post('/playlist/:playlistId/add-song/:trackId', (req, res) => {
-    const playlistId = req.params.playlistId;
-    const trackId = req.params.trackId;
-
-    try {
-        // Add the selected track to the playlist using the Spotify API
-        spotifyApi.addTracksToPlaylist(playlistId, [`spotify:track:${trackId}`]);
-        res.redirect(`/playlist/${playlistId}`);
-    } catch (err) {
-        console.error('Error adding track to playlist:', err);
-        res.status(500).send('Error adding track to playlist');
-    }
-});
+  });
+  
 
 
 // Start the server
