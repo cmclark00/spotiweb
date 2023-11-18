@@ -86,6 +86,7 @@ app.get('/profile', isAuthenticated, async (req, res) => {
 
 // index.js
 
+// Inside the '/playlist/:playlistId' route
 app.get('/playlist/:playlistId', isAuthenticated, async (req, res) => {
     const playlistId = req.params.playlistId;
 
@@ -101,12 +102,13 @@ app.get('/playlist/:playlistId', isAuthenticated, async (req, res) => {
         console.log('Tracks Data:', tracksData.body); // Log tracks data to the console
 
         // Pass user, playlist, and tracks to the template
-        res.render('playlist', { user: req.user, playlist, tracks });
+        res.render('playlist', { user: req.user, playlist, tracks, searchResults: [] }); // Add an empty array for searchResults
     } catch (err) {
         console.error(err);
         res.status(500).send('Error fetching playlist details or tracks');
     }
 });
+
 
 
 // Route to create a new playlist
