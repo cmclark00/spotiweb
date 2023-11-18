@@ -47,30 +47,36 @@
     </form>
 </div>
         
-            <!-- Display user playlists with artwork -->
+            <!-- Display user playlists with artwork and delete button -->
             <% if (playlists && playlists.length > 0) { %>
                 <h2 class="mt-4">Your Playlists</h2>
                 <div class="row justify-content-center text-center">
-                    <% playlists.forEach((playlist) => { %>
-                        <div class="col-md-4 mb-4 text-center">
-                            <div class="card">
-                                <% if (playlist.images && playlist.images.length > 0) { %>
-                                    <a href="/playlist/<%= playlist.id %>">
-                                        <img src="<%= playlist.images[0].url %>" class="card-img-top" alt="Playlist Art">
-                                    </a>
-                                <% } %>
-                                <div class="card-body">
-                                    <h5 class="card-title text-center">
-                                        <a href="/playlist/<%= playlist.id %>"><%= playlist.name %></a>
-                                    </h5>
-                                </div>
-                            </div>
+                <% playlists.forEach((playlist) => { %>
+                    <div class="col-md-4 mb-4 text-center">
+                    <div class="card">
+                        <% if (playlist.images && playlist.images.length > 0) { %>
+                            <a href="/playlist/<%= playlist.id %>">
+                                <img src="<%= playlist.images[0].url %>" class="card-img-top" alt="Playlist Art">
+                            </a>
+                        <% } %>
+                        <div class="card-body">
+                        <h5 class="card-title text-center">
+                            <a href="/playlist/<%= playlist.id %>"><%= playlist.name %></a>
+                        </h5>
+                        <form action="/delete-playlist" method="post">
+                            <input type="hidden" name="playlistId" value="<%= playlist.id %>">
+                            <button type="submit" class="btn btn-danger">Delete Playlist</button>
+                          </form>
+                          
                         </div>
-                    <% }); %>
+                    </div>
+                    </div>
+                <% }); %>
                 </div>
             <% } else { %>
                 <p>No playlists available.</p>
             <% } %>
+  
         </div>
 
 

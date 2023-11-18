@@ -84,14 +84,6 @@ app.get('/profile', isAuthenticated, async (req, res) => {
 
 
 
-
-  
-// index.js
-
-// index.js
-
-// Inside the '/playlist/:playlistId' route// Inside the '/playlist/:playlistId' route
-// Inside the route where you handle playlists, generate a UUID for each playlist
 app.get('/playlist/:playlistId', isAuthenticated, async (req, res) => {
   const playlistId = req.params.playlistId;
 
@@ -154,6 +146,40 @@ app.post('/create-playlist', isAuthenticated, async (req, res) => {
         res.status(500).send('Error creating playlist');
     }
 });
+
+app.post('/delete-playlist', isAuthenticated, async (req, res) => {
+  const playlistId = req.body.playlistId;
+
+  try {
+    // Use the Spotify API to delete the playlist
+    await spotifyApi.unfollowPlaylist(playlistId);
+
+    // Update local data (in-memory object)
+    const playlistIndex = playlists[req.user.id].findIndex((playlist) => playlist.id === playlistId);
+    if (playlistIndex !== -1) {
+      playlists[req.user.id].splice(playlistIndex, 1);
+      console.log('Playlist deleted successfully');
+    } else {
+      console.log('Playlist not found locally');
+    }
+
+    // Redirect to the profile page with updated playlists
+    res.redirect('/profile');
+  } catch (error) {
+    console.error('Error deleting playlist from Spotify API:', error);
+    res.status(500).send('Error deleting playlist');
+  }
+});
+
+
+
+
+
+
+
+
+
+
 
 app.get('/search', isAuthenticated, async (req, res) => {
     const searchQuery = req.query.query;
