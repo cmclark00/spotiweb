@@ -8,17 +8,17 @@
   <title>Login</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
-<body>
+<body class="d-flex align-items-center justify-content-center" style="min-height: 100vh;">
 
-<div class="container mt-5">
-  <h1>Login with Spotify</h1>
+<div class="container">
+  <h1 class="text-center">Login with Spotify</h1>
 
   <!-- Embed the Spotify login button within an iframe -->
   <iframe src="https://accounts.spotify.com/authorize?client_id=02ed3f3586a54f43b8a03143e937636aD&response_type=code&redirect_uri=http://localhost:5000/callback&scope=user-read-private%20playlist-modify-public%20playlist-modify-private" width="300" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
 
   <!-- Add any additional content or form elements as needed -->
-
 </div>
+
 <!-- Add these lines to your HTML file(s) for Bootstrap JS and Popper.js -->
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
@@ -26,4 +26,5 @@
 
 </body>
 </html>
+
 

@@ -4,6 +4,9 @@ const passport = require('./auth');
 const SpotifyWebApi = require('spotify-web-api-node');
 const app = express();
 
+// Serve static files from the root directory
+app.use(express.static(__dirname));
+
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
 
@@ -34,8 +37,8 @@ const playlists = [];
 
 // Additional route for the root path
 app.get('/', (req, res) => {
-    res.render('home', { user: req.user }); // Pass the user object
-  });
+  res.render('home', { user: req.user });
+});
   
 // Route to initiate Spotify authentication
 app.get('/login', passport.authenticate('spotify', { scope: ['user-read-private', 'playlist-modify-public', 'playlist-modify-private'] }));
@@ -51,10 +54,9 @@ app.get('/callback', passport.authenticate('spotify', { failureRedirect: '/' }),
 
 // Route to get user profile and playlists
 app.get('/profile', isAuthenticated, async (req, res) => {
-    if (!req.user.accessToken) {
-        return res.status(401).send('No access token available');
-    }
-
+  if (!req.user.accessToken) {
+      return res.status(401).send('No access token available');
+  }
     spotifyApi.setAccessToken(req.user.accessToken);
 
     try {
@@ -86,28 +88,29 @@ app.get('/profile', isAuthenticated, async (req, res) => {
 
 // index.js
 
-// Inside the '/playlist/:playlistId' route
+// Inside the '/playlist/:playlistId' route// Inside the '/playlist/:playlistId' route
 app.get('/playlist/:playlistId', isAuthenticated, async (req, res) => {
-    const playlistId = req.params.playlistId;
+  const playlistId = req.params.playlistId;
 
-    try {
-        // Fetch playlist details
-        const playlistData = await spotifyApi.getPlaylist(playlistId);
-        const playlist = playlistData.body;
+  try {
+      // Fetch playlist details
+      const playlistData = await spotifyApi.getPlaylist(playlistId);
+      const playlist = playlistData.body;
 
-        // Fetch playlist tracks
-        const tracksData = await spotifyApi.getPlaylistTracks(playlistId);
-        const tracks = tracksData.body.items; // Use items directly
+      // Fetch playlist tracks
+      const tracksData = await spotifyApi.getPlaylistTracks(playlistId);
+      const tracks = tracksData.body.items; // Use items directly
 
-        console.log('Tracks Data:', tracksData.body); // Log tracks data to the console
+      console.log('Tracks Data:', tracksData.body); // Log tracks data to the console
 
-        // Pass user, playlist, and tracks to the template
-        res.render('playlist', { user: req.user, playlist, tracks, searchResults: [] }); // Add an empty array for searchResults
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Error fetching playlist details or tracks');
-    }
+      // Pass user, playlist, tracks, and access token to the template
+      res.render('playlist', { user: req.user, playlist, tracks, accessToken: req.user.accessToken, searchResults: [] }); // Add accessToken
+  } catch (err) {
+      console.error(err);
+      res.status(500).send('Error fetching playlist details or tracks');
+  }
 });
+
 
 
 
@@ -151,6 +154,15 @@ app.get('/search', isAuthenticated, async (req, res) => {
     }
   });
   
+  app.get('/logout', (req, res) => {
+    req.logout((err) => {
+        if (err) {
+            return res.status(500).send('Error logging out');
+        }
+        res.redirect('/');
+    });
+});
+
 
 
 // Start the server

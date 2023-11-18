@@ -100,56 +100,69 @@
                 // Display the album art if available
                 if (result.album && result.album.images && result.album.images.length > 0) {
                     const albumArt = document.createElement('img');
-                    albumArt.src = result.album.images[0].url; // Use the first image
+                    albumArt.src = result.album.images[2].url; // Use the first image
                     albumArt.alt = 'Album Art';
-                    albumArt.style.width = '50px'; // Set the width
-                    albumArt.style.height = '50px'; // Set the height
                     albumArt.className = 'mr-2'; // Add margin for better spacing
                     resultDiv.appendChild(albumArt);  // <-- Append to resultDiv, not resultItem
                 }
+                
+                // Display the track information
+                const resultInfo = document.createElement('div');
+                resultInfo.textContent = `${result.name} by ${result.artists.map(artist => artist.name).join(', ')}`;
+                resultDiv.appendChild(resultInfo);
 
-                // Add button to add the track to the playlist
-                const addButton = document.createElement('button');
-                addButton.textContent = 'Add';
-                addButton.className = 'btn btn-success';
+              // Add button to add the track to the playlist
+            const addButton = document.createElement('button');
+            addButton.textContent = 'Add';
+            addButton.className = 'btn btn-success';
 
-                // Convert the playlist object to a JSON string and pass it to the addSong function
-                addButton.addEventListener('click', () => addSong(result.id, JSON.stringify(playlist) ));
+            // Pass the track ID and playlist ID to the addSong function
+            addButton.addEventListener('click', () => addSong(result.id, '<%= playlist.id %>', '<%= accessToken %>'));
+            
+            resultDiv.appendChild(addButton);
 
+            // Append the result div to the search results container
+            searchResults.appendChild(resultDiv);
+        });
+    };
 
-                resultDiv.appendChild(addButton);
+    // Attach the performSearch function to the input's "input" event
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', performSearch);
 
-                // Append the result div to the search results container
-                searchResults.appendChild(resultDiv);
+    // Function to add a song to the playlist
+    const addSong = async (trackId, playlistId, accessToken) => {
+        try {
+            console.log('Adding song:', trackId);
 
-
+            // Send a request to Spotify API to add the song to the playlist
+            const response = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks?uris=spotify:track:${trackId}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json',
+                },
             });
-        };
 
-        // Attach the performSearch function to the input's "input" event
-        const searchInput = document.getElementById('searchInput');
-        searchInput.addEventListener('input', performSearch);
+            // Handle the response as needed
+        if (response.ok) {
+            // Track added successfully
+            console.log('Track added successfully');
+            alert('Track added successfully to playlist');
 
-        // Function to add a song to the playlist
-const addSong = async (trackId, playlist) => {
-    try {
-        console.log('Adding song:', trackId);
-        // Send a request to your server to add the song to the playlist
-        const response = await fetch(`/playlist/${playlist.id}/add-song/${trackId}`, { method: 'POST' });
-
-        // Handle the response as needed
-        const data = await response.json();
-        console.log(data);
-
-        // You might want to update the UI or provide feedback to the user
-        alert(data.message);
+            // Reload the page
+            window.location.reload();
+        } else {
+            // Handle the error response
+            console.error('Error adding song. Status:', response.status);
+            alert('Error adding song. Please try again.');
+        }
     } catch (error) {
         console.error('Error adding song:', error);
         alert('Error adding song. Please try again.');
     }
-};
-
-    </script>
+}
+</script>
 </div>
       
 
