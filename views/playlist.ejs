@@ -6,9 +6,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Playlist</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<style>
+    body {
+      background-color: #1DB954; /* Spotify green */
+      background-image: url('/logo-spotify-icon-4096.png'); /* Replace with the path to your Spotify logo image */
+      background-size: cover;
+      background-position: center;
+      color: white; /* Set text color to white for better contrast */
+    }
+  </style>
 </head>
 <body>
+    
     <div class="container mt-4">
         <h2 class="text-center mb-4">Playlist: <%= playlist.name %></h2>
         
@@ -24,13 +35,13 @@
             </div>
         </div>
 
-        <div class="card mt-4">
+        <div class="card mt-4"  style="background-color: #1DB954; color: white;">
             <div class="card-body text-center">
                 <h5 class="card-title">Playlist Tracks</h5>
                 <div class="row justify-content-center">
                     <% tracks.forEach((track) => { %>
                         <div class="col-md-4 mb-4">
-                            <div class="card">
+                            <div class="card" style="background-color: #1DB954; color: white;">
                                 <!-- Album Art Card -->
                                 <div class="card-img-top">
                                     <% if (track.track.album.images && track.track.album.images.length > 0) { %>
@@ -38,12 +49,12 @@
                                         <img src="<%= track.track.album.images[1].url %>" alt="Album Art" class="img-fluid" style="object-fit: cover;">
                                     <% } %>
                                 </div>
-
+                                    
                                 <!-- Track Info Card -->
                                 <div class="card-body">
                                     <h5 class="card-title"><%= track.track.name %></h5>
                                     <p class="card-text">by <%= track.track.artists.map(artist => artist.name).join(', ') %></p>
-
+                                        
                                     <!-- Audio Preview -->
                                     <% if (track.track.preview_url) { %>
                                         <audio controls class="mt-2">
@@ -96,7 +107,6 @@
                 // Create a div to hold each result and its add button
                 const resultDiv = document.createElement('div');
                 resultDiv.className = 'd-flex justify-content-between align-items-center list-group-item';
-
                 // Display the album art if available
                 if (result.album && result.album.images && result.album.images.length > 0) {
                     const albumArt = document.createElement('img');
@@ -107,17 +117,19 @@
                 }
                 
                 // Display the track information
+                
                 const resultInfo = document.createElement('div');
                 resultInfo.textContent = `${result.name} by ${result.artists.map(artist => artist.name).join(', ')}`;
+                resultInfo.style.color = 'black'; // Set the text color to black
                 resultDiv.appendChild(resultInfo);
 
               // Add button to add the track to the playlist
             const addButton = document.createElement('button');
             addButton.textContent = 'Add';
             addButton.className = 'btn btn-success';
-
+    
             // Pass the track ID and playlist ID to the addSong function
-            addButton.addEventListener('click', () => addSong(result.id, '<%= playlist.id %>', '<%= accessToken %>'));
+            addButton.addEventListener('click', () => addSong(result.id, '<%= playlist.id %>', '<%= accessToken %>' ));
             
             resultDiv.appendChild(addButton);
 

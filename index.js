@@ -2,8 +2,10 @@ const express = require('express');
 const session = require('express-session');
 const passport = require('./auth');
 const SpotifyWebApi = require('spotify-web-api-node');
+const uuid = require('uuid'); // Import the uuid library
 const app = express();
-
+// In-memory map to store the association between Spotify playlist IDs and custom UUIDs
+const playlistIdToUuidMap = new Map();
 // Serve static files from the root directory
 app.use(express.static(__dirname));
 
@@ -89,8 +91,20 @@ app.get('/profile', isAuthenticated, async (req, res) => {
 // index.js
 
 // Inside the '/playlist/:playlistId' route// Inside the '/playlist/:playlistId' route
+// Inside the route where you handle playlists, generate a UUID for each playlist
 app.get('/playlist/:playlistId', isAuthenticated, async (req, res) => {
   const playlistId = req.params.playlistId;
+
+  // Check if a custom UUID is already associated with the Spotify playlist ID
+  let privatePlaylistId = playlistIdToUuidMap.get(playlistId);
+
+  // If not, generate a new custom UUID and associate it with the Spotify playlist ID
+  if (!privatePlaylistId) {
+      privatePlaylistId = uuid.v4();
+      playlistIdToUuidMap.set(playlistId, privatePlaylistId);
+  }
+
+  console.log('UUID of the playlist:', privatePlaylistId); // Log the UUID to the console
 
   try {
       // Fetch playlist details
@@ -99,12 +113,12 @@ app.get('/playlist/:playlistId', isAuthenticated, async (req, res) => {
 
       // Fetch playlist tracks
       const tracksData = await spotifyApi.getPlaylistTracks(playlistId);
-      const tracks = tracksData.body.items; // Use items directly
+      const tracks = tracksData.body.items;
 
       console.log('Tracks Data:', tracksData.body); // Log tracks data to the console
 
-      // Pass user, playlist, tracks, and access token to the template
-      res.render('playlist', { user: req.user, playlist, tracks, accessToken: req.user.accessToken, searchResults: [] }); // Add accessToken
+      // Pass user, playlist, and tracks to the template, along with the privatePlaylistId
+      res.render('playlist', { user: req.user, playlist, tracks, accessToken: req.user.accessToken, searchResults: [], privatePlaylistId });
   } catch (err) {
       console.error(err);
       res.status(500).send('Error fetching playlist details or tracks');
