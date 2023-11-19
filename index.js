@@ -1,9 +1,11 @@
+const { google } = require('googleapis');
 const express = require('express');
 const session = require('express-session');
 const passport = require('./auth');
 const SpotifyWebApi = require('spotify-web-api-node');
 const uuid = require('uuid'); // Import the uuid library
 const app = express();
+const fetch = require('node-fetch');
 // In-memory map to store the association between Spotify playlist IDs and custom UUIDs
 const playlistIdToUuidMap = new Map();
 // Serve static files from the root directory
@@ -42,6 +44,40 @@ const ensureAuthenticated = (req, res, next) => {
   res.redirect('/login'); // Redirect to login if not authenticated
 }
 
+// Function to fetch YouTube profile information
+const fetchYouTubeProfile = async (accessToken) => {
+  const profileUrl = 'https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true';
+  const playlistsUrl = 'https://www.googleapis.com/youtube/v3/playlists?part=snippet&mine=true';
+
+  try {
+    const [profileResponse, playlistsResponse] = await Promise.all([
+      fetch(profileUrl, { headers: { 'Authorization': `Bearer ${accessToken}` } }),
+      fetch(playlistsUrl, { headers: { 'Authorization': `Bearer ${accessToken}` } })
+    ]);
+
+    if (!profileResponse.ok || !playlistsResponse.ok) {
+      const errorMessage = `Error fetching YouTube profile or playlists. Status: ${profileResponse.status} / ${playlistsResponse.status}`;
+      console.error(errorMessage);
+      throw new Error(errorMessage);
+    }
+
+    const profileData = await profileResponse.json();
+    const playlistsData = await playlistsResponse.json();
+
+    return {
+      youtubeProfile: profileData.items[0].snippet,
+      youtubePlaylists: playlistsData.items
+    };
+  } catch (error) {
+    console.error('Error in fetchYouTubeProfile:', error.message);
+    throw error;
+  }
+};
+
+
+
+
+
 const playlists = [];
 
 // Additional route for the root path
@@ -69,19 +105,15 @@ app.get('/callback', passport.authenticate('spotify', { failureRedirect: '/' }),
   // Assuming you have a route for the YouTube profile like this
 app.get('/youtube-profile', ensureAuthenticated, async (req, res) => {
   try {
-      // Fetch YouTube profile information and playlists
-      const youtubeProfile = await fetchYouTubeProfile(req.user.youtubeAccessToken);
-      const youtubePlaylists = await fetchYouTubePlaylists(req.user.youtubeAccessToken);
-
-      res.render('youtube-profile', {
-          user: req.user,  // Assuming you have user information available
-          youtubePlaylists,  // Pass the YouTube playlists to the template
-      });
+    const { youtubeProfile, youtubePlaylists } = await fetchYouTubeProfile(req.user.accessToken);
+    res.render('youtube-profile', { user: req.user, youtubeProfile, youtubePlaylists });
   } catch (error) {
-      console.error('Error fetching YouTube profile:', error);
-      res.status(500).send('Internal Server Error');
+    console.error('Error fetching YouTube profile:', error);
+    res.status(500).send(`Error fetching YouTube profile: ${error.message}`);
   }
 });
+
+
 
   
 
