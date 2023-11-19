@@ -35,7 +35,7 @@
             </div>
         </div>
 
-        <div class="card mt-4"  style="background-color: #1DB954; color: white;">
+        <div class="card mt-4" style="background-color: #1DB954; color: white;">
             <div class="card-body text-center">
                 <h5 class="card-title">Playlist Tracks</h5>
                 <div class="row justify-content-center">
@@ -49,12 +49,12 @@
                                         <img src="<%= track.track.album.images[1].url %>" alt="Album Art" class="img-fluid" style="object-fit: cover;">
                                     <% } %>
                                 </div>
-                                    
+    
                                 <!-- Track Info Card -->
                                 <div class="card-body">
                                     <h5 class="card-title"><%= track.track.name %></h5>
                                     <p class="card-text">by <%= track.track.artists.map(artist => artist.name).join(', ') %></p>
-                                        
+    
                                     <!-- Audio Preview -->
                                     <% if (track.track.preview_url) { %>
                                         <audio controls class="mt-2">
@@ -64,6 +64,13 @@
                                     <% } else { %>
                                         <p class="mt-2">No preview available</p>
                                     <% } %>
+    
+                                    <!-- Remove Track Form -->
+                                    <form action="/remove-track" method="post" class="mt-2">
+                                        <input type="hidden" name="playlistId" value="<%= playlist.id %>">
+                                        <input type="hidden" name="trackId" value="<%= track.track.id %>">
+                                        <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -71,6 +78,7 @@
                 </div>
             </div>
         </div>
+    
 
        <!-- Live Search Section -->
     <div class="mt-4">

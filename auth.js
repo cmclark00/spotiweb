@@ -1,6 +1,7 @@
 // auth.js
 const passport = require('passport');
 const SpotifyStrategy = require('passport-spotify').Strategy;
+const YouTubeStrategy = require('passport-youtube-v3').Strategy;
 
 passport.use(
     new SpotifyStrategy(
@@ -17,6 +18,15 @@ passport.use(
     )
   );
   
+// YouTube Music authentication strategy
+passport.use('youtube', new YouTubeStrategy({
+  clientID: '12291341441-a1lloq2l4qikq2n3o224dneic92hmijc.apps.googleusercontent.com',
+  clientSecret: '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',
+  callbackURL: 'http://localhost:5000/youtube-callback',
+}, (accessToken, refreshToken, profile, done) => {
+  // Save user data to the database or session as needed
+  return done(null, profile);
+}));
 
 passport.serializeUser((user, done) => {
   done(null, user);

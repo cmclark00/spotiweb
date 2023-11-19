@@ -35,11 +35,26 @@ const isAuthenticated = (req, res, next) => {
   res.redirect('/login');
 };
 
+const ensureAuthenticated = (req, res, next) => {
+  if (req.isAuthenticated()) {
+      return next();
+  }
+  res.redirect('/login'); // Redirect to login if not authenticated
+}
+
 const playlists = [];
 
 // Additional route for the root path
 app.get('/', (req, res) => {
   res.render('home', { user: req.user });
+});
+
+// Route to initiate YouTube Music authentication
+app.get('/youtube-login', passport.authenticate('youtube', { scope: ['profile', 'https://www.googleapis.com/auth/youtube.readonly'] }));
+
+// Route to handle the YouTube Music callback
+app.get('/youtube-callback', passport.authenticate('youtube', { failureRedirect: '/' }), (req, res) => {
+    res.redirect('/youtube-profile');
 });
   
 // Route to initiate Spotify authentication
@@ -51,7 +66,23 @@ app.get('/callback', passport.authenticate('spotify', { failureRedirect: '/' }),
     res.redirect('/profile');
   });
   
-  
+  // Assuming you have a route for the YouTube profile like this
+app.get('/youtube-profile', ensureAuthenticated, async (req, res) => {
+  try {
+      // Fetch YouTube profile information and playlists
+      const youtubeProfile = await fetchYouTubeProfile(req.user.youtubeAccessToken);
+      const youtubePlaylists = await fetchYouTubePlaylists(req.user.youtubeAccessToken);
+
+      res.render('youtube-profile', {
+          user: req.user,  // Assuming you have user information available
+          youtubePlaylists,  // Pass the YouTube playlists to the template
+      });
+  } catch (error) {
+      console.error('Error fetching YouTube profile:', error);
+      res.status(500).send('Internal Server Error');
+  }
+});
+
   
 
 // Route to get user profile and playlists
@@ -171,14 +202,37 @@ app.post('/delete-playlist', isAuthenticated, async (req, res) => {
   }
 });
 
+// Route to remove a track from a playlist
+app.post('/remove-track', isAuthenticated, async (req, res) => {
+  const playlistId = req.body.playlistId;
+  const trackId = req.body.trackId;
 
+  try {
+    // Use the Spotify API to remove the track from the playlist
+    await spotifyApi.removeTracksFromPlaylist(playlistId, [{ uri: `spotify:track:${trackId}` }]);
 
+    // Update local data (in-memory object)
+    const playlist = playlists[req.user.id].find(p => p.id === playlistId);
+    if (playlist) {
+      // Find the index of the track in the playlist
+      const trackIndex = playlist.tracks.findIndex(t => t.track.id === trackId);
+      if (trackIndex !== -1) {
+        playlist.tracks.splice(trackIndex, 1);
+        console.log('Track removed successfully');
+      } else {
+        console.log('Track not found locally');
+      }
+    } else {
+      console.log('Playlist not found locally');
+    }
 
-
-
-
-
-
+    // Redirect to the same playlist page with updated track list
+    res.redirect(`/playlist/${playlistId}`);
+  } catch (error) {
+    console.error('Error removing track from Spotify API:', error);
+    res.status(500).send('Error removing track');
+  }
+});
 
 
 app.get('/search', isAuthenticated, async (req, res) => {
