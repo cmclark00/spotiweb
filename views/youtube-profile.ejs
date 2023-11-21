@@ -1,91 +1,117 @@
-<!-- views/youtube-profile.ejs -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Profile</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <style>
-        body {
-            background-color: #FF0000; /* YouTube red or your desired color */
-            background-image: url('/path-to-youtube-logo'); /* Replace with the path to your YouTube logo image */
-            background-size: cover;
-            background-position: center;
-            color: white; /* Set text color to white for better contrast */
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <style>
+    body {
+      background-color: #FF0000; /* YouTube red */
+      background-image: url('/logo-youtube-icon-4096.png'); /* Replace with the path to your YouTube logo image */
+      background-size: cover;
+      background-position: center;
+      color: white; /* Set text color to white for better contrast */
+    }
+  </style>
 </head>
 <body>
 
-<div class="container mt-4 text-center">
-    <h2 class="text-center mb-4">YouTube Profile Page</h2>
-
-    <div class="row justify-content-center text-center">
-        <div class="col-md-4">
-            <div class="text-center">
-                <!-- Use the appropriate property for the YouTube user's profile photo -->
-                <img src="<%= user.youtubeProfilePhoto %>" alt="User Photo" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
-                <p class="mt-2">Welcome, <%= user.youtubeDisplayName %>!</p>
-                <a href="/logout" class="btn btn-danger mt-2">Logout</a>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Form to create a new YouTube playlist -->
-    <div class="mt-4 text-center">
-        <h2>Create a New YouTube Playlist</h2>
-        <form action="/youtube/create-playlist" method="post">
-            <div class="form-group">
-                <label for="playlistName">Playlist Name</label>
-                <input type="text" id="playlistName" name="playlistName" class="form-control" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Create Playlist</button>
-        </form>
-    </div>
-        
-    <!-- Display user YouTube playlists with artwork and delete button -->
-    <% if (youtubePlaylists && youtubePlaylists.length > 0) { %>
-        <h2 class="mt-4">Your YouTube Playlists</h2>
-        <div class="row justify-content-center text-center">
-            <% youtubePlaylists.forEach((playlist) => { %>
-                <div class="col-md-4 mb-4 text-center">
-                    <div class="card" style="background-color: #FF0000; color: white;">
-                        <!-- Use the appropriate property for the YouTube playlist images -->
-                        <% if (playlist.youtubeImages && playlist.youtubeImages.length > 0) { %>
-                            <a href="/youtube/playlist/<%= playlist.youtubeId %>">
-                                <img src="<%= playlist.youtubeImages[0].url %>" class="card-img-top" alt="Playlist Art">
-                            </a>
-                        <% } %>
-                        <div class="card-body">
-                            <h5 class="card-title text-center">
-                                <a href="/youtube/playlist/<%= playlist.youtubeId %>"><%= playlist.youtubeName %></a>
-                            </h5>
-                            <form action="/youtube/delete-playlist" method="post">
-                                <input type="hidden" name="playlistId" value="<%= playlist.youtubeId %>">
-                                <button type="submit" class="btn btn-danger">Delete Playlist</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            <% }); %>
-        </div>
-    <% } else { %>
-        <p>No YouTube playlists available.</p>
-    <% } %>
-  
+<!-- Display the user's profile picture -->
+<div>
+    <h2>Welcome, user</h2>
+    <img id="profilePicture" alt="User Profile Picture" style="width: 100px; height: 100px; object-fit: cover;">
 </div>
 
-<div class="d-flex justify-content-center">
-    <a href="/" class="btn btn-primary mt-4">Back to Home</a>
+<!-- Display the user's playlists -->
+<div>
+    <h2>YouTube Playlists</h2>
+    <ul id="playlistList"></ul>
 </div>
 
-<!-- Add Bootstrap JS and Popper.js CDN links (if needed) -->
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 
+
+<script>
+    // Replace with your YouTube API key
+    const apiKey = '<%= apiKey %>';
+
+    // Replace with the authenticated user's access token
+    const accessToken = '<%= accessToken %>';
+
+    // Fetch the user's YouTube channel information
+    async function fetchYouTubeProfile() {
+        const profileUrl = `https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true`;
+
+        try {
+            const response = await fetch(profileUrl, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
+
+            if (!response.ok) {
+                console.error(`Error fetching YouTube profile. Status: ${response.status}`);
+                return;
+            }
+
+            const data = await response.json();
+
+            // Check if the 'items' array is present and not empty
+            if (data.items && data.items.length > 0) {
+                const profilePictureUrl = data.items[0].snippet.thumbnails.default.url;
+                document.getElementById('profilePicture').src = profilePictureUrl;
+            } else {
+                console.error('No channel information found.');
+            }
+        } catch (error) {
+            console.error('Error fetching YouTube profile:', error);
+        }
+    }
+
+    // Fetch the user's YouTube playlists
+    async function fetchYouTubePlaylists() {
+        const playlistsUrl = `https://www.googleapis.com/youtube/v3/playlists?part=snippet&mine=true&key=${apiKey}`;
+
+        try {
+            const response = await fetch(playlistsUrl, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
+
+            if (!response.ok) {
+                console.error(`Error fetching YouTube playlists. Status: ${response.status}`);
+                return;
+            }
+
+            const data = await response.json();
+
+            // Check if the 'items' array is present
+            if (data.items && data.items.length > 0) {
+                const playlistList = document.getElementById('playlistList');
+
+                data.items.forEach((playlist) => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = playlist.snippet.title;
+                    playlistList.appendChild(listItem);
+                });
+            } else {
+                console.error('No playlists found.');
+            }
+        } catch (error) {
+            console.error('Error fetching YouTube playlists:', error);
+        }
+    }
+
+    
+
+    // Call the functions to fetch and display the profile picture and playlists
+    fetchYouTubeProfile();
+    fetchYouTubePlaylists();
+</script>
+
 </body>
 </html>
-

@@ -29,6 +29,8 @@ app.use(passport.session());
 // Import the Spotify API module
 const spotifyApi = new SpotifyWebApi();
 
+
+
 // Middleware to check if the user is authenticated
 const isAuthenticated = (req, res, next) => {
   if (req.isAuthenticated()) {
@@ -44,38 +46,6 @@ const ensureAuthenticated = (req, res, next) => {
   res.redirect('/login'); // Redirect to login if not authenticated
 }
 
-// Function to fetch YouTube profile information
-const fetchYouTubeProfile = async (accessToken) => {
-  const profileUrl = 'https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true';
-  const playlistsUrl = 'https://www.googleapis.com/youtube/v3/playlists?part=snippet&mine=true';
-
-  try {
-    const [profileResponse, playlistsResponse] = await Promise.all([
-      fetch(profileUrl, { headers: { 'Authorization': `Bearer ${accessToken}` } }),
-      fetch(playlistsUrl, { headers: { 'Authorization': `Bearer ${accessToken}` } })
-    ]);
-
-    if (!profileResponse.ok || !playlistsResponse.ok) {
-      const errorMessage = `Error fetching YouTube profile or playlists. Status: ${profileResponse.status} / ${playlistsResponse.status}`;
-      console.error(errorMessage);
-      throw new Error(errorMessage);
-    }
-
-    const profileData = await profileResponse.json();
-    const playlistsData = await playlistsResponse.json();
-
-    return {
-      youtubeProfile: profileData.items[0].snippet,
-      youtubePlaylists: playlistsData.items
-    };
-  } catch (error) {
-    console.error('Error in fetchYouTubeProfile:', error.message);
-    throw error;
-  }
-};
-
-
-
 
 
 const playlists = [];
@@ -85,13 +55,72 @@ app.get('/', (req, res) => {
   res.render('home', { user: req.user });
 });
 
+
 // Route to initiate YouTube Music authentication
-app.get('/youtube-login', passport.authenticate('youtube', { scope: ['profile', 'https://www.googleapis.com/auth/youtube.readonly'] }));
+app.get('/youtube-login', passport.authenticate('youtube', { scope: ['profile', 'https://www.googleapis.com/auth/youtube'] }));
 
 // Route to handle the YouTube Music callback
 app.get('/youtube-callback', passport.authenticate('youtube', { failureRedirect: '/' }), (req, res) => {
-    res.redirect('/youtube-profile');
+  console.log('YouTube callback success. User:', req.user);
+  res.redirect('/youtube-profile');
 });
+
+const fetchYouTubeProfile = async (accessToken) => {
+  const profileUrl = 'https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true';
+
+  try {
+    const profileResponse = await fetch(profileUrl, { headers: { 'Authorization': `Bearer ${accessToken}` } });
+
+    if (!profileResponse.ok) {
+      const errorMessage = `Error fetching YouTube profile. Status: ${profileResponse.status}`;
+      console.error(errorMessage);
+      throw new Error(errorMessage);
+    }
+
+    const profileData = await profileResponse.json();
+
+    // Check if the response structure is as expected
+    if (profileData.items && profileData.items.length > 0 && profileData.items[0].snippet) {
+      return {
+        youtubeProfile: profileData.items[0].snippet,
+      };
+    } else {
+      console.error('Unexpected YouTube API response structure:', profileData);
+      throw new Error('Unexpected YouTube API response structure');
+    }
+  } catch (error) {
+    console.error('Error in fetchYouTubeProfile:', error.message);
+    throw error;
+  }
+};
+const apiKey = "AIzaSyCq5YfPI4r0qwPC3ttNsiDsSUTZxZ43G2o"
+// Function to get the current user's YouTube channel ID
+// Function to get the current user's YouTube channel ID
+
+
+// Route to display YouTube profile
+// Route to display YouTube profile
+app.get('/youtube-profile', ensureAuthenticated, async (req, res) => {
+  try {
+      // Extract relevant information from _json
+      const youtubeProfile = {
+          displayName: req.user.displayName,
+          id: req.user.id,
+          // Add any other relevant fields you need
+      };
+
+    
+
+      res.render('youtube-profile', { user: req.user, youtubeProfile, apiKey, youtubePlaylists: [], accessToken: req.user.accessToken });
+  } catch (error) {
+      console.error('Error fetching YouTube profile:', error);
+      res.status(500).send(`Error fetching YouTube profile: ${error.message}`);
+  }
+});
+
+
+
+
   
 // Route to initiate Spotify authentication
 app.get('/login', passport.authenticate('spotify', { scope: ['user-read-private', 'playlist-modify-public', 'playlist-modify-private'] }));
@@ -101,20 +130,6 @@ app.get('/login', passport.authenticate('spotify', { scope: ['user-read-private'
 app.get('/callback', passport.authenticate('spotify', { failureRedirect: '/' }), (req, res) => {
     res.redirect('/profile');
   });
-  
-  // Assuming you have a route for the YouTube profile like this
-app.get('/youtube-profile', ensureAuthenticated, async (req, res) => {
-  try {
-    const { youtubeProfile, youtubePlaylists } = await fetchYouTubeProfile(req.user.accessToken);
-    res.render('youtube-profile', { user: req.user, youtubeProfile, youtubePlaylists });
-  } catch (error) {
-    console.error('Error fetching YouTube profile:', error);
-    res.status(500).send(`Error fetching YouTube profile: ${error.message}`);
-  }
-});
-
-
-
   
 
 // Route to get user profile and playlists
@@ -290,9 +305,8 @@ app.get('/search', isAuthenticated, async (req, res) => {
 });
 
 
-
 // Start the server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 80;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

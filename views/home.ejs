@@ -26,24 +26,12 @@
             </div>
         </div>
 
-        <% if (user) { %>
-            <div class="row justify-content-center">
-                <div class="col text-center">
-                    <div class="user-info mt-4">
-                        <img src="<%= user.photos[0].value %>" alt="User Photo" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
-                        <p class="mt-2">Welcome, <%= user.displayName %>!</p>
-                        <a href="/profile" class="btn btn-primary mt-2">Go to Profile</a>
-                    </div>
-                </div>
-            </div>
-        <% } else { %>
             <div class="row justify-content-center">
                 <div class="col text-center">
                     <a href="/login" class="btn btn-success mt-4">Login with Spotify</a>
                     <a href="/youtube-login" class="btn btn-primary">Login with YouTube Music</a>
                 </div>
             </div>
-        <% } %>
     </div>
 
     <!-- Add these lines to your HTML file(s) for Bootstrap JS and Popper.js -->

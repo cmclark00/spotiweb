@@ -8,7 +8,7 @@ passport.use(
       {
         clientID: '02ed3f3586a54f43b8a03143e937636a',
         clientSecret: 'a412c98385474978bbbca92756a63acd',
-        callbackURL: 'http://localhost:5000/callback', // Adjust accordingly
+        callbackURL: 'https://coreymclark.com/callback', // Adjust accordingly
       },
       (accessToken, refreshToken, expires_in, profile, done) => {
         // Save user information to session or database
@@ -22,7 +22,7 @@ passport.use(
 passport.use('youtube', new YouTubeStrategy({
   clientID: '12291341441-a1lloq2l4qikq2n3o224dneic92hmijc.apps.googleusercontent.com',
   clientSecret: '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',
-  callbackURL: 'http://localhost:5000/youtube-callback',
+  callbackURL: 'https://coreymclark.com/youtube-callback',
 }, (accessToken, refreshToken, profile, done) => {
   // Save user data to the database or session as needed
   return done(null, profile);

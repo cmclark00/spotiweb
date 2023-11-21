@@ -1,0 +1,38 @@
+<!-- views/youtube-login.ejs -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <style>
+    body {
+      background-color: #FF0000; /* YouTube red */
+      background-image: url('/logo-youtube-icon-4096.png'); /* Replace with the path to your YouTube logo image */
+      background-size: cover;
+      background-position: center;
+      color: white; /* Set text color to white for better contrast */
+    }
+  </style>
+</head>
+<body class="d-flex align-items-center justify-content-center" style="min-height: 100vh;">
+
+<div class="container">
+  <h1 class="text-center">Login with YouTube</h1>
+
+  <!-- Embed the YouTube login button within an iframe -->
+  <iframe src="https://accounts.google.com/o/oauth2/auth?client_id=12291341441-a1lloq2l4qikq2n3o224dneic92hmijc.apps.googleusercontent.com&https://coreymclark.com/youtube-callback&scope=https://www.googleapis.com/auth/youtube.readonly&response_type=code&access_type=offline
+" width="300" height="80" frameborder="0" allowfullscreen="true"></iframe>
+
+  <!-- Add any additional content or form elements as needed -->
+</div>
+
+<!-- Add these lines to your HTML file(s) for Bootstrap JS and Popper.js -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+</body>
+</html>
