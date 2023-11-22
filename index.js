@@ -61,38 +61,13 @@ app.get('/youtube-login', passport.authenticate('youtube', { scope: ['profile', 
 
 // Route to handle the YouTube Music callback
 app.get('/youtube-callback', passport.authenticate('youtube', { failureRedirect: '/' }), (req, res) => {
+  
   console.log('YouTube callback success. User:', req.user);
   res.redirect('/youtube-profile');
+  
 });
 
-const fetchYouTubeProfile = async (accessToken) => {
-  const profileUrl = 'https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true';
 
-  try {
-    const profileResponse = await fetch(profileUrl, { headers: { 'Authorization': `Bearer ${accessToken}` } });
-
-    if (!profileResponse.ok) {
-      const errorMessage = `Error fetching YouTube profile. Status: ${profileResponse.status}`;
-      console.error(errorMessage);
-      throw new Error(errorMessage);
-    }
-
-    const profileData = await profileResponse.json();
-
-    // Check if the response structure is as expected
-    if (profileData.items && profileData.items.length > 0 && profileData.items[0].snippet) {
-      return {
-        youtubeProfile: profileData.items[0].snippet,
-      };
-    } else {
-      console.error('Unexpected YouTube API response structure:', profileData);
-      throw new Error('Unexpected YouTube API response structure');
-    }
-  } catch (error) {
-    console.error('Error in fetchYouTubeProfile:', error.message);
-    throw error;
-  }
-};
 const apiKey = "AIzaSyCq5YfPI4r0qwPC3ttNsiDsSUTZxZ43G2o"
 // Function to get the current user's YouTube channel ID
 // Function to get the current user's YouTube channel ID
@@ -106,12 +81,13 @@ app.get('/youtube-profile', ensureAuthenticated, async (req, res) => {
       const youtubeProfile = {
           displayName: req.user.displayName,
           id: req.user.id,
+          
           // Add any other relevant fields you need
       };
+      const accessToken = req.user.accessToken;
+      
 
-    
-
-      res.render('youtube-profile', { user: req.user, youtubeProfile, apiKey, youtubePlaylists: [], accessToken: req.user.accessToken });
+      res.render('youtube-profile', { user: req.user, youtubeProfile, apiKey, youtubePlaylists: [], accessToken});
   } catch (error) {
       console.error('Error fetching YouTube profile:', error);
       res.status(500).send(`Error fetching YouTube profile: ${error.message}`);

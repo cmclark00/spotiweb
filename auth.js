@@ -25,6 +25,7 @@ passport.use('youtube', new YouTubeStrategy({
   callbackURL: 'https://coreymclark.com/youtube-callback',
 }, (accessToken, refreshToken, profile, done) => {
   // Save user data to the database or session as needed
+  profile.accessToken = accessToken
   return done(null, profile);
 }));
 

@@ -18,8 +18,8 @@
 <body>
 
 <!-- Display the user's profile picture -->
-<div>
-    <h2>Welcome, user</h2>
+<div id="profileName">
+    <h2 id="userName"></h2>
     <img id="profilePicture" alt="User Profile Picture" style="width: 100px; height: 100px; object-fit: cover;">
 </div>
 
@@ -36,14 +36,16 @@
 
 <script>
     // Replace with your YouTube API key
-    const apiKey = '<%= apiKey %>';
+    
 
     // Replace with the authenticated user's access token
     const accessToken = '<%= accessToken %>';
+    
+
 
     // Fetch the user's YouTube channel information
     async function fetchYouTubeProfile() {
-        const profileUrl = `https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true`;
+        const profileUrl = 'https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true';
 
         try {
             const response = await fetch(profileUrl, {
@@ -62,7 +64,9 @@
             // Check if the 'items' array is present and not empty
             if (data.items && data.items.length > 0) {
                 const profilePictureUrl = data.items[0].snippet.thumbnails.default.url;
+                const userName = data.items[0].snippet.title;
                 document.getElementById('profilePicture').src = profilePictureUrl;
+                document.getElementById('userName').innerText = `Welcome, ${userName}`;
             } else {
                 console.error('No channel information found.');
             }
@@ -73,7 +77,7 @@
 
     // Fetch the user's YouTube playlists
     async function fetchYouTubePlaylists() {
-        const playlistsUrl = `https://www.googleapis.com/youtube/v3/playlists?part=snippet&mine=true&key=${apiKey}`;
+        const playlistsUrl = 'https://www.googleapis.com/youtube/v3/playlists?part=snippet&mine=true';
 
         try {
             const response = await fetch(playlistsUrl, {
@@ -89,14 +93,19 @@
 
             const data = await response.json();
 
-            // Check if the 'items' array is present
-            if (data.items && data.items.length > 0) {
-                const playlistList = document.getElementById('playlistList');
+            // Update the playlistList element with playlist information
+            const playlistList = document.getElementById('playlistList');
+            playlistList.innerHTML = ''; // Clear previous content
 
-                data.items.forEach((playlist) => {
-                    const listItem = document.createElement('li');
-                    listItem.textContent = playlist.snippet.title;
-                    playlistList.appendChild(listItem);
+            if (data.items && data.items.length > 0) {
+                data.items.forEach(playlist => {
+                    const playlistItem = document.createElement('li');
+                    playlistItem.innerHTML = `
+                        <img src="${playlist.snippet.thumbnails.default.url}" alt="${playlist.snippet.title}">
+                        <h3>${playlist.snippet.title}</h3>
+                        <p>${playlist.snippet.description}</p>
+                    `;
+                    playlistList.appendChild(playlistItem);
                 });
             } else {
                 console.error('No playlists found.');
@@ -106,10 +115,10 @@
         }
     }
 
-    
-
-    // Call the functions to fetch and display the profile picture and playlists
+    // Call the function to fetch and display the profile picture
     fetchYouTubeProfile();
+
+    // Call the function to fetch and display the playlists
     fetchYouTubePlaylists();
 </script>
 
