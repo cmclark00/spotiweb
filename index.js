@@ -63,6 +63,7 @@ app.get('/youtube-login', passport.authenticate('youtube', { scope: ['profile', 
 app.get('/youtube-callback', passport.authenticate('youtube', { failureRedirect: '/' }), (req, res) => {
   
   console.log('YouTube callback success. User:', req.user);
+  console.log('YouTube callback success. Playlists:', req.params);
   res.redirect('/youtube-profile');
   
 });
@@ -95,6 +96,13 @@ app.get('/youtube-profile', ensureAuthenticated, async (req, res) => {
 });
 
 
+app.get('/youtube-playlist/:id', (req, res) => {
+  const playlistId = req.params.id;
+  const playlistName = req.params.displayName;
+  // Add logic to fetch playlist details based on the playlistId
+  // Render the youtube-playlist.ejs page with the playlist details
+  res.render('youtube-playlist', { playlistId, playlistName });
+});
 
 
   

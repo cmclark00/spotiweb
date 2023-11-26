@@ -100,23 +100,19 @@
 
             const data = await response.json();
 
-            // Update the playlistList element with playlist information
+            // Display the playlists dynamically
             const playlistList = document.getElementById('playlistList');
-            playlistList.innerHTML = ''; // Clear previous content
-            const playListId = data.items.playListId;
-            
             if (data.items && data.items.length > 0) {
-                data.items.forEach(playlist => {
-                    const playlistItem = document.createElement('li');
-                    playlistItem.innerHTML = `
-                        <img src="${playlist.snippet.thumbnails.default.url}" alt="${playlist.snippet.title}">
-                        <h3>${playlist.snippet.title}</h3>
-                        <p>${playlist.snippet.description}</p>
-                    `;
-                    playlistList.appendChild(playlistItem);
+                data.items.forEach((playlist) => {
+                    const listItem = document.createElement('li');
+                    const link = document.createElement('a');
+                    link.href = `/youtube-playlist/${playlist.id}`;
+                    link.textContent = playlist.snippet.title;
+                    listItem.appendChild(link);
+                    playlistList.appendChild(listItem);
                 });
             } else {
-                console.error('No playlists found.');
+                console.error('No playlists available.');
             }
         } catch (error) {
             console.error('Error fetching YouTube playlists:', error);
